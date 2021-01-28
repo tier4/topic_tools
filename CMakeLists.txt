@@ -54,8 +54,19 @@ rclcpp_components_register_node(node_list_component
 )
 
 
+add_library(topic_list_component SHARED src/topic_list.cpp)
+target_compile_definitions(topic_list_component
+  PRIVATE "TOPIC_TOOLS_BUILDING_DLL")
+
+ament_target_dependencies(topic_list_component rclcpp_generic rclcpp rclcpp_components)
+rclcpp_components_register_node(topic_list_component
+  PLUGIN "topic_tools::TopicList"
+  EXECUTABLE topic_list
+)
+
+
 install(
-  TARGETS topic_tools_node hz_checker node_list_component
+  TARGETS topic_tools_node hz_checker node_list_component topic_list_component
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
