@@ -31,12 +31,27 @@ rclcpp_components_register_node(topic_tools_node
   EXECUTABLE relay
 )
 
+add_library(hz_checker SHARED src/hz_checker.cpp)
+target_compile_definitions(hz_checker
+  PRIVATE "TOPIC_TOOLS_BUILDING_DLL")
+
+
+ament_target_dependencies(hz_checker rclcpp_generic rclcpp rclcpp_components)
+rclcpp_components_register_node(hz_checker
+  PLUGIN "topic_tools::HzCheckerNode"
+  EXECUTABLE hz_checker_node
+)
+
 install(
-  TARGETS topic_tools_node
+  TARGETS topic_tools_node hz_checker
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
+
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
