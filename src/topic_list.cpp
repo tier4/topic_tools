@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_components/register_node_macro.hpp>
-
+#include <map>
 #include <memory>
 #include <string>
+#include <vector>
+
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_components/register_node_macro.hpp"
 
 namespace topic_tools
 {
@@ -34,7 +36,8 @@ TopicList::TopicList(const rclcpp::NodeOptions & node_options)
 {
   RCLCPP_INFO(get_logger(), "start searching topics");
   rclcpp::Rate(0.2).sleep();
-  std::map<std::string, std::vector<std::string> > topic_names_and_types = get_topic_names_and_types();
+  std::map<std::string, std::vector<std::string>> topic_names_and_types =
+    get_topic_names_and_types();
   RCLCPP_INFO(get_logger(), "found %lu topics.", topic_names_and_types.size());
   RCLCPP_INFO(get_logger(), "--------------------------------------------");
 
