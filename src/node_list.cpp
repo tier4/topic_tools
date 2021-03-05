@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_components/register_node_macro.hpp>
-
 #include <memory>
 #include <string>
+#include <vector>
+
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_components/register_node_macro.hpp"
 
 namespace topic_tools
 {
@@ -35,7 +36,9 @@ NodeList::NodeList(const rclcpp::NodeOptions & node_options)
   RCLCPP_INFO(get_logger(), "start searching nodes");
   rclcpp::Rate(1.0).sleep();
   std::vector<std::string> node_names = get_node_names();
-  RCLCPP_INFO(get_logger(), "found %lu nodes. (%lu and me)", node_names.size(), node_names.size() - 1);
+  RCLCPP_INFO(
+    get_logger(), "found %lu nodes. (%lu and me)", node_names.size(),
+    node_names.size() - 1);
   RCLCPP_INFO(get_logger(), "--------------------------------------------");
 
   for (const auto & n : node_names) {

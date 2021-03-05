@@ -45,26 +45,25 @@ HzCheckerNode::HzCheckerNode(const rclcpp::NodeOptions & node_options)
   output_rate_ = declare_parameter("output_rate_", 2.0);
   window_ = static_cast<std::size_t>(declare_parameter("window", 10));
 
-  if(window_ < min_window_){
+  if (window_ < min_window_) {
     RCLCPP_ERROR_STREAM(get_logger(), "minimum window size is " << min_window_);
     window_ = min_window_;
-  } 
+  }
 
   // get topic type
   std::string topic_type;
   bool found_topic = false;
-  while(rclcpp::ok() && !found_topic)
-  {
+  while (rclcpp::ok() && !found_topic) {
     const auto topics = get_topic_names_and_types();
-    for(const auto & t : topics)
-    {
-      if(t.first == input_topic)
-      {
+    for (const auto & t : topics) {
+      if (t.first == input_topic) {
         topic_type = t.second.front();
-        found_topic = true;;
+        found_topic = true;
       }
     }
-    RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), 1000 /* ms */, "waiting for " << input_topic);
+    RCLCPP_INFO_STREAM_THROTTLE(
+      get_logger(),
+      *get_clock(), 1000 /* ms */, "waiting for " << input_topic);
     rclcpp::sleep_for(std::chrono::milliseconds(100));
   }
 
@@ -80,13 +79,11 @@ void HzCheckerNode::callback(std::shared_ptr<rclcpp::SerializedMessage> msg)
   (void) msg;
 
   time_.push_back(now());
-  while(time_.size() > window_ && rclcpp::ok())
-  {
+  while (time_.size() > window_ && rclcpp::ok()) {
     time_.pop_front();
   }
 
-  if(time_.size() < min_window_)
-  {
+  if (time_.size() < min_window_) {
     return;
   }
 
@@ -95,24 +92,22 @@ void HzCheckerNode::callback(std::shared_ptr<rclcpp::SerializedMessage> msg)
 
   double min_duration = total_duration;
   double max_duration = 0.0;
-  for (std::size_t i = 1; i < time_.size(); i++)
-  {
-    const auto duration = (time_.at(i) - time_.at(i-1)).seconds();
-    if(min_duration > duration)
-    {
+  for (std::size_t i = 1; i < time_.size(); i++) {
+    const auto duration = (time_.at(i) - time_.at(i - 1)).seconds();
+    if (min_duration > duration) {
       min_duration = duration;
     }
-    if(max_duration < duration)
-    {
+    if (max_duration < duration) {
       max_duration = duration;
     }
   }
 
   const auto output_period_ms = 1000 / output_rate_;
-  RCLCPP_INFO_STREAM_THROTTLE(get_logger(), *get_clock(), output_period_ms, 
-                              std::endl <<
-                              "avg rate: " << 1.0 / avg_duration << " avg sec: " << avg_duration << std::endl <<
-                              "min: " << min_duration << " max_duration: " << max_duration << " window: " << time_.size());
+  RCLCPP_INFO_STREAM_THROTTLE(
+    get_logger(), *get_clock(), output_period_ms,
+    std::endl <<
+      "avg rate: " << 1.0 / avg_duration << " avg sec: " << avg_duration << std::endl <<
+      "min: " << min_duration << " max_duration: " << max_duration << " window: " << time_.size());
 }
 
 }  // namespace topic_tools
