@@ -67,10 +67,19 @@ HzCheckerNode::HzCheckerNode(const rclcpp::NodeOptions & node_options)
     rclcpp::sleep_for(std::chrono::milliseconds(100));
   }
 
+  // set qos
+  rclcpp::QoS qos{1};
+  const auto publishers_info = get_publishers_info_by_topic(input_topic);
+  if (!publishers_info.empty()) {
+    const auto endpoint_info = publishers_info.front();
+    qos = endpoint_info.qos_profile();
+    RCLCPP_INFO_STREAM(get_logger(), "Success to get QoS profile of publisher.");
+  }
+
   RCLCPP_INFO_STREAM(get_logger(), "subscribing to " << input_topic << " with type " << topic_type);
 
   sub_ = rclcpp_generic::GenericSubscription::create(
-    get_node_topics_interface(), input_topic, topic_type, 1,
+    get_node_topics_interface(), input_topic, topic_type, qos,
     std::bind(&HzCheckerNode::callback, this, std::placeholders::_1));
 }
 
