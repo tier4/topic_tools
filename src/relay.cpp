@@ -15,8 +15,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 
-#include <rclcpp_generic/generic_publisher.hpp>
-#include <rclcpp_generic/generic_subscription.hpp>
+#include <rclcpp/generic_publisher.hpp>
+#include <rclcpp/generic_subscription.hpp>
 
 #include <memory>
 #include <string>
@@ -32,8 +32,8 @@ public:
   explicit RelayNode(const rclcpp::NodeOptions & node_options);
 
 private:
-  rclcpp_generic::GenericSubscription::SharedPtr sub_;
-  rclcpp_generic::GenericPublisher::SharedPtr pub_;
+  rclcpp::GenericSubscription::SharedPtr sub_;
+  rclcpp::GenericPublisher::SharedPtr pub_;
 
   rmw_qos_reliability_policy_t reliability_policy_;
   rmw_qos_history_policy_t history_policy_;
@@ -43,8 +43,8 @@ private:
 RelayNode::RelayNode(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("relay", node_options)
 {
-  auto input_topic = declare_parameter("input_topic").get<std::string>();
-  auto output_topic = declare_parameter("output_topic").get<std::string>();
+  auto input_topic = declare_parameter<std::string>("input_topic");
+  auto output_topic = declare_parameter<std::string>("output_topic");
 
   // Parse reliability parameter
   {
@@ -112,13 +112,11 @@ RelayNode::RelayNode(const rclcpp::NodeOptions & node_options)
   qos.durability(durability_policy_);
 
   auto type = declare_parameter("type").get<std::string>();
-  pub_ = rclcpp_generic::GenericPublisher::create(
-    get_node_topics_interface(), output_topic, type, qos);
-  sub_ = rclcpp_generic::GenericSubscription::create(
-    get_node_topics_interface(), input_topic, type, qos,
+  pub_ = this->create_generic_publisher(output_topic, type, qos);
+  sub_ = this->create_generic_subscription(
+    input_topic, type, qos,
     [this](std::shared_ptr<rclcpp::SerializedMessage> msg) {
-      auto msg_rcl = std::make_shared<rcl_serialized_message_t>(msg->get_rcl_serialized_message());
-      pub_->publish(msg_rcl);
+      pub_->publish(*msg);
     });
 }
 
