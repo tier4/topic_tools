@@ -15,8 +15,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 
-#include <rclcpp_generic/generic_subscription.hpp>
-
 #include <memory>
 #include <string>
 #include <deque>
@@ -30,7 +28,7 @@ public:
   explicit HzCheckerNode(const rclcpp::NodeOptions & node_options);
 
 private:
-  rclcpp_generic::GenericSubscription::SharedPtr sub_;
+  rclcpp::GenericSubscription::SharedPtr sub_;
   std::deque<rclcpp::Time> time_;
   std::size_t window_;
   double output_rate_;
@@ -41,7 +39,7 @@ private:
 HzCheckerNode::HzCheckerNode(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("hz_checker", node_options)
 {
-  auto input_topic = declare_parameter("input_topic").get<std::string>();
+  auto input_topic = declare_parameter<std::string>("input_topic");
   output_rate_ = declare_parameter("output_rate_", 2.0);
   window_ = static_cast<std::size_t>(declare_parameter("window", 10));
 
@@ -78,8 +76,8 @@ HzCheckerNode::HzCheckerNode(const rclcpp::NodeOptions & node_options)
 
   RCLCPP_INFO_STREAM(get_logger(), "subscribing to " << input_topic << " with type " << topic_type);
 
-  sub_ = rclcpp_generic::GenericSubscription::create(
-    get_node_topics_interface(), input_topic, topic_type, qos,
+  sub_ = this->create_generic_subscription(
+    input_topic, topic_type, qos,
     std::bind(&HzCheckerNode::callback, this, std::placeholders::_1));
 }
 
